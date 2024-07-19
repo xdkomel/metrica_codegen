@@ -25,6 +25,8 @@ data_types:
 
 events:
   - path: new_flow/Дежурный эксперт
-    type: SpecialistsCategories
+    name: DutyExpertSelected
+    obj: SpecialistsCategories
   - path: new_flow/Поиск/Экран Поиска/Поисковый запрос
-    type: SearchingData
+    name: SearchInitiated
+    obj: SearchingData
