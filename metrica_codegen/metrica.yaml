@@ -1,0 +1,30 @@
+data_types:
+  - meta: Категория специалиста
+    name: SpecCat
+    vars:
+      - name: specCatId
+        type: int
+      - name: specCatName
+        type: str
+    repr: ($specCatId, $specCatName)
+  - meta: Категории нескольких специалистов
+    name: SpecialistsCategories
+    vars:
+      - key: Выбраны специалисты
+        name: specialistsNamesList
+        type: list<str>
+        val: 'Имена: $'
+      - key: Категории специалистов
+        name: specialistsCategoriesList
+        type: list<SpecCat>      
+  - name: SearchingData
+    vars:
+      - key: Поисковый запрос
+        name: query
+        type: str
+
+events:
+  - path: new_flow/Дежурный эксперт
+    type: SpecialistsCategories
+  - path: new_flow/Поиск/Экран Поиска/Поисковый запрос
+    type: SearchingData

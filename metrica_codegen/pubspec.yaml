@@ -1,0 +1,10 @@
+name: metrica_codegen
+description: A project to read the metrica config and generate Dart classes for it
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies: 
+  yaml: ^3.1.2
