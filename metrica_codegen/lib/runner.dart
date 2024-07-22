@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:metrica_codegen/data_types_generator.dart';
+import 'package:metrica_codegen/extensions_generator.dart';
 import 'package:metrica_codegen/functions_generator.dart';
 import 'package:yaml/yaml.dart';
 
@@ -13,7 +14,10 @@ abstract class Runner {
     final yaml = loadYaml(contents);
     final typeGenerator = DataTypesGenerator();
     final funsGenerator = FunctionsGenerator();
+    final extGenerator = ExtensionsGenerator();
     final lines = [
+      ...extGenerator.generateExtensions,
+      '',
       ...typeGenerator.generateTypes(yaml['data_types']),
       '',
       ...funsGenerator.generateFunctions(yaml['events']),

@@ -6,7 +6,7 @@ data_types:
         type: int
       - name: specCatName
         type: str
-    repr: ($specCatId, $specCatName)
+    repr: "$specCatId and $specCatName"
   - meta: Категории нескольких специалистов
     name: SpecialistsCategories
     vars:

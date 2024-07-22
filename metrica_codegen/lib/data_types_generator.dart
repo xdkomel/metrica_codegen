@@ -1,14 +1,14 @@
+import 'dart:collection';
+
 import 'package:metrica_codegen/utils.dart';
 import 'package:yaml/yaml.dart';
 
 class DataTypesGenerator {
-  List<String> generateTypes(YamlList dataTypes) => dataTypes
-      .expand(
+  Iterable<String> generateTypes(YamlList dataTypes) => dataTypes.expand(
         (s) => [..._generateOneType(s), ''],
-      )
-      .toList();
+      );
 
-  List<String> _generateOneType(YamlMap obj) => [
+  Iterable<String> _generateOneType(YamlMap obj) => [
         'class ${obj["name"]} {',
         ..._generateVars(obj['vars']).map(indent(1)),
         ..._generateConstructor(obj["name"], obj['vars']).map(indent(1)),
@@ -29,7 +29,10 @@ class DataTypesGenerator {
   Iterable<String> _toJson(String? reprRule, YamlList vars) {
     final body = switch (reprRule) {
       null => _toJsonVars(vars),
-      String rule => _toJsonRepr(rule),
+      String rule => _toJsonRepr(
+          HashSet.from(vars.map((v) => v['name'])),
+          rule,
+        ),
     };
     return [
       'dynamic get toJson => ' + body[0],
@@ -37,7 +40,37 @@ class DataTypesGenerator {
     ];
   }
 
-  List<String> _toJsonRepr(String reprRule) => ['\"$reprRule\";'];
+  List<String> _toJsonRepr(HashSet<String> vars, String reprRule) {
+    final dollarSigns = reprRule.runes.indexed
+        .where(
+          (e) => e.$2 == '\$'.runes.first,
+        )
+        .map((e) => e.$1)
+        .map((i) => i + 1);
+    final body = dollarSigns.fold(
+      (reprRule, 0),
+      (acc, index) => _applyVars(vars, acc.$1, index + acc.$2),
+    );
+    return ['\"${body.$1}\";'];
+  }
+
+  (String, int) _applyVars(HashSet<String> vars, String str, int indexFrom) {
+    final (start, other) = (
+      str.substring(0, indexFrom),
+      str.substring(indexFrom),
+    );
+    return vars.fold(
+      (str, 0),
+      (acc, name) {
+        if (other.startsWith(name)) {
+          final end = other.substring(name.length);
+          final newStr = start + '{$name.toJson}' + end;
+          return (newStr, newStr.length - str.length);
+        }
+        return acc;
+      },
+    );
+  }
 
   List<String> _toJsonVars(YamlList vars) => [
         '{',
@@ -54,14 +87,14 @@ class DataTypesGenerator {
       };
 
   String _varVal(YamlMap variable) => switch (variable['val']) {
-        null => variable['name'],
+        null => '${variable["name"]}.toJson',
         _ => _format(
             variable['name'],
             "\"${variable['val']}\"",
           ),
       };
 
-  String _format(String varName, String line) => line.replaceAll('\$', '\$$varName');
+  String _format(String varName, String line) => line.replaceAll('\$', '\${$varName.toJson}');
 
   String _mapType(String type) => switch (type) {
         'str' => 'String',
